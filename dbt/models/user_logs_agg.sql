@@ -32,7 +32,7 @@ select
     t.total_secs
 from log_matrix
 left join
-dbt.demo_churn_kkbox.user_logs_all as t
+{{ ref('user_logs_all') }}) as t
 on log_matrix.msno = t.msno
   and log_matrix.ts = t.ts
 )
