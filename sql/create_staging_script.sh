@@ -3,7 +3,6 @@
 fname="snowsql_staging.sql"
 
 split -l 5000000 user_logs.csv user_logs_small.csv
-echo "user_logs.csv has been split into smaller files"
 
 echo "
 USE database KKBOX;
@@ -53,9 +52,8 @@ SELECT * FROM KKBOX.CHURN.MEMBERS LIMIT 10;
 
 DROP STAGE IF EXISTS customer_churn; 
 " >> $fname
-echo "snowsql_staging.sql has been created. Finishing..."
+echo "The file snowsql_staging.sql has been created in the local directory"
 
 find . -type f -name user_logs_small\* -exec rm -f {} \;
 
-echo "user_logs_small files have been removed"
-echo "Finished"
+echo "The script is complete"
