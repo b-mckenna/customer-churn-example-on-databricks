@@ -16,6 +16,7 @@ echo "
 PUT file://"${PWD}"/transactions.csv @customer_churn;
 PUT file://"${PWD}"/transactions_v2.csv @customer_churn;
 PUT file://"${PWD}"/members_v3.csv @customer_churn;
+PUT file://"${PWD}"/user_logs_v2.csv @customer_churn;
 " >> $fname
 
 for i in $(find . -name 'user_logs_sm*')
