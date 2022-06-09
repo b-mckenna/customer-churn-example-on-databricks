@@ -16,6 +16,7 @@
 				'train': {
 					'metric' : 'roc_auc',
 					'excluded_model_types' : ['FastAI', 'KNN', 'NeuralNet', 'LightGBMLarge'],
+					'size' : 'large',
 				},
 				},
 
