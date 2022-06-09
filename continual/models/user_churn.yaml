@@ -19,6 +19,7 @@ exclude_columns:
   - days_expired
 train:
   metric: roc_auc
+  size: large
   excluded_model_types:
     - FastAI
     - KNN
