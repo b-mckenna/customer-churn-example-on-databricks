@@ -12,4 +12,4 @@ exclude_columns:
   - date
   - log_date
 query: |
-  select * from kkbox.churn.user_logs_all
+  select * from kkbox.user_logs_all

@@ -9,4 +9,4 @@ owners:
 documentation: |
     https://docs.continual.ai/customer-churn/
 query: |
-  select * from kkbox.churn.user_logs_agg
+  select * from kkbox.user_logs_agg
