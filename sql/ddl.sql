@@ -1,57 +1,37 @@
-begin;
-
-
-set database_name = 'KKBOX';
-set schema_name = 'CHURN';
-set role_name = '<insert_role>';
-
 -- create database & schema
-create database if not exists identifier($database_name);
+create schema if not exists kkbox;
 
--- grant access
-grant CREATE SCHEMA, MONITOR, USAGE
-on database identifier($database_name)
-to role identifier($role_name);
+use database kkbox;
 
-use database identifier($database_name);
-
-create schema if not exists identifier($schema_name);
-
-grant all privileges
-on schema identifier($schema_name)
-to role identifier($role_name);
-
-create or replace TABLE MEMBERS (
+create TABLE if not exists members (
 	MSNO VARCHAR(16777216),
-	CITY NUMBER(38,0),
-	BD NUMBER(38,0),
+	CITY NUMERIC(38,0),
+	BD NUMERIC(38,0),
 	GENDER VARCHAR(16777216),
-	REGISTERED_VIA NUMBER(38,0),
-	REGISTRATION_INIT_TIME NUMBER(38,0)
-);
+	REGISTERED_VIA NUMERIC(38,0),
+	REGISTRATION_INIT_TIME NUMERIC(38,0)
+) USING CSV LOCATION '/tmp/databricks_demo/members_v3.csv';
 
-create or replace TABLE TRANSACTIONS (
+CREATE TABLE if not exists TRANSACTIONS (
 	MSNO VARCHAR(16777216),
-	PAYMENT_METHOD_ID NUMBER(38,0),
-	PAYMENT_PLAN_DAYS NUMBER(38,0),
-	PLAN_LIST_PRICE NUMBER(38,0),
-	ACTUAL_AMOUNT_PAID NUMBER(38,0),
-	IS_AUTO_RENEW NUMBER(38,0),
-	TRANSACTION_DATE NUMBER(38,0),
-	MEMBERSHIP_EXPIRE_DATE NUMBER(38,0),
-	IS_CANCEL NUMBER(38,0)
-);
+	PAYMENT_METHOD_ID NUMERIC(38,0),
+	PAYMENT_PLAN_DAYS NUMERIC(38,0),
+	PLAN_LIST_PRICE NUMERIC(38,0),
+	ACTUAL_AMOUNT_PAID NUMERIC(38,0),
+	IS_AUTO_RENEW NUMERIC(38,0),
+	TRANSACTION_DATE NUMERIC(38,0),
+	MEMBERSHIP_EXPIRE_DATE NUMERIC(38,0),
+	IS_CANCEL NUMERIC(38,0)
+) USING CSV LOCATION '/tmp/databricks_demo/transactions.csv'; 
 
-create or replace TABLE USER_LOGS (
+CREATE TABLE if not exists USER_LOGS (
 	MSNO VARCHAR(16777216),
-	DATE NUMBER(38,0),
-	NUM_25 NUMBER(38,0),
-	NUM_50 NUMBER(38,0),
-	NUM_75 NUMBER(38,0),
-	NUM_985 NUMBER(38,0),
-	NUM_100 NUMBER(38,0),
-	NUM_UNQ NUMBER(38,0),
+	DATE NUMERIC(38,0),
+	NUM_25 NUMERIC(38,0),
+	NUM_50 NUMERIC(38,0),
+	NUM_75 NUMERIC(38,0),
+	NUM_985 NUMERIC(38,0),
+	NUM_100 NUMERIC(38,0),
+	NUM_UNQ NUMERIC(38,0),
 	TOTAL_SECS FLOAT
-);
-
-commit;
+) USING CSV LOCATION '/tmp/databricks_demo/user_logs_v2.csv';

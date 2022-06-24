@@ -1,41 +1,42 @@
-begin;
-
-create or replace view as kkbox.churn.members_all(
+create or replace view kkbox.members_all as(
 	select
 	 msno,
 	 city,
 	 bd,
 	 gender,
 	 registered_via,
-	 date(registration_init_time,'YYYYMMDD') as registration_dt
- from kkbox.churn.members
+	 to_date(cast(registration_init_time as string),'yyyyMMDD') as registration_dt
+ from kkbox.members
 );
 
-create or replace view as kkbox.churn.transactions_all(
-	select distinct
+create or replace view kkbox.transactions_all as(
+  with t as(
+    select distinct
 		msno,
-		date(transaction_date,'YYYYMMDD') as transaction_dt,
-		date(membership_expire_date,'YYYYMMDD') as expiration_dt,
-		TO_TIMESTAMP_NTZ(date_from_parts(date_part(year,expiration_dt),date_part(month,expiration_dt),1)) as ts, --predict churn in the beginning of the  month when account is expiring
+		to_date(cast(transaction_date as string),'yyyyMMDD') as transaction_dt,
+		to_date(cast(membership_expire_date as string),'yyyyMMDD') as expiration_dt,
 		payment_method_id,
 		payment_plan_days,
 		plan_list_price,
 		actual_amount_paid,
 		is_auto_renew,
 		is_cancel
-	from kkbox.churn.transactions
-
+    from kkbox.transactions
+  )
+  select *,
+  timestamp(concat(string(year(expiration_dt)) + string(month(expiration_dt)) + "1")) as ts --predict churn in the beginning of the  month when account is expiring
+  from t
 );
 
-create or replace view as kkbox.churn.transactions_canceled(
+create or replace view kkbox.transactions_canceled as(
 	with t as (
 	  select
 			A.msno,
 			A.transaction_dt,
 			max(A.ts) as ts,
 			max(B.transaction_dt) as most_recent_transaction_dt
-	  from kkbox.churn.transactions_all as A
-	  join kkbox.churn.transactions_all as B
+	  from kkbox.transactions_all as A
+	  join kkbox.transactions_all as B
 	  where B.msno = A.msno
 	  and B.transaction_dt <= A.ts
 		and B.transaction_dt > A.transaction_dt
@@ -49,18 +50,18 @@ create or replace view as kkbox.churn.transactions_canceled(
 		max(t.most_recent_transaction_dt) as most_recent_transaction_dt,
 		max(c.is_cancel) as most_recent_transaction_cancel
 	from t
-	join kkbox.churn.transactions_all as C
+	join kkbox.transactions_all as C
 	where C.msno = t.msno
 	and C.transaction_dt = t.most_recent_transaction_dt
 	group by t.msno, t.transaction_dt
 );
 
-create or replace view as kkbox.churn.transactions_final(
+create or replace view kkbox.transactions_final as(
 	with t as (
 	 select A.*,
 	  coalesce(B.most_recent_transaction_cancel, 0) as most_recent_transaction_cancel
-	  from kkbox.churn.transactions_all  as A
-	  left join kkbox.churn.transactions_canceled  as B
+	  from kkbox.transactions_all  as A
+	  left join kkbox.transactions_canceled  as B
 	  on A.msno = B.msno
 	  and A.transaction_dt = B.transaction_dt
 	  where A.is_cancel = 0
@@ -81,19 +82,23 @@ create or replace view as kkbox.churn.transactions_final(
 		--squash sub-montly subs all into one month, use last value for exp/trans dt to calculate churn
 );
 
-create or replace view as kkbox.churn.user_logs_all(
-	select distinct *,
-		date(date,'YYYYMMDD') as log_date,
-		TO_TIMESTAMP_NTZ(log_date) as ts
-	from kkbox.churn.user_logs
+create or replace view kkbox.user_logs_all as(
+  with d as(
+  select distinct *,
+    to_date(cast(date as string),'yyyyMMDD') as log_date
+	from kkbox.user_logs
+  )
+  select *,
+  timestamp(log_date) as ts
+  from d
 );
 
-create or replace table as kkbox.churn.user_logs_agg(
+create table user_logs_agg(
 	with log_matrix as (
 	  select B.msno, A.ts from
-	  (select distinct ts from kkbox.churn.user_logs_all) as A
+	  (select distinct ts from kkbox.user_logs_all) as A
 	  cross join
-	  (select distinct msno from kkbox.churn.user_logs_all) as B
+	  (select distinct msno from kkbox.user_logs_all) as B
 	),
 	logs_full as (
 	select
@@ -108,7 +113,7 @@ create or replace table as kkbox.churn.user_logs_agg(
 	    t.total_secs
 	from log_matrix
 	left join
-	kkbox.churn.user_logs_all as t
+	kkbox.user_logs_all as t
 	on log_matrix.msno = t.msno
 	  and log_matrix.ts = t.ts
 	)
@@ -141,5 +146,3 @@ create or replace table as kkbox.churn.user_logs_agg(
 	avg(total_secs) over (partition by msno order by ts desc rows between 1 following and 180 following) as total_secs_180_day_avg
 	from logs_full
 );
-
-commit;
