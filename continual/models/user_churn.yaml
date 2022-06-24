@@ -13,6 +13,19 @@ columns:
   - name: msno
     type: TEXT
     entity: kkbox_user
+  - name: ts
+    type: timestamp
+  - name: expiration_dt
+    type: 
+  - name: next_transaction
+    type:
+  - name: most_recent_transaction
+    type:
+  - name: days_since_last_transaction
+    type: 
+  - name: days_expired
+  - name: is_churn
+  - name: split
 exclude_columns:
   - next_transaction
   - most_recent_transaction
@@ -26,4 +39,4 @@ train:
     - NeuralNet
     - LightGBMLarge
 query: |
-  select * from kkbox.churn.churn_model_definition
+  select * from kkbox.churn_model_definition

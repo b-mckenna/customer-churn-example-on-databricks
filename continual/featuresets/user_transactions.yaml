@@ -19,4 +19,4 @@ exclude_columns:
   - days_expired
   - cutoff_dt
 query: |
-  select * from kkbox.churn.transactions_final
+  select * from kkbox.transactions_final
